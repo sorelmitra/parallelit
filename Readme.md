@@ -7,45 +7,56 @@ This is a simple Node.JS tool that allows processing arbitrary data in parallel,
 - Step 2: Split the CSV file from Step 1 into N slices.  Feed each slice to a worker, which is
         another Node.JS file.  Spin up N workers and wait for them to finish.  Report results.
 
-# Quick Start
+This is useful when you need to perform a lot of lengthy operations, and want to speed up the process by executing them in parallel.
 
-## If Gathering the Raw Data is Quick
+NOTE: I also attempted to do this with just NodeJS promises, based on the fact that
+requests are made in parallel by the Node engine.  It does run in parallel, but
+much slower than in the fork version.  Thus, this tool was born.
+
+# Quick Start
 
 Copy `src/example/gatherer.js` and implement the `gather()` function to write the CSV file with the raw data.
 
 Copy `src/example/worker.js` and implement the `doWork(number, slice, sliceSource, outputFilepath, logInterval)` function to:
 
-- Read its `slice` of the form `{start: 0, end: 40}` from `sliceSource` CSV file
+- Read its `slice` from `sliceSource` CSV file, by calling to `getSlice(sliceSource, slice.start, slice.end)`
+- Report progress by calling to `periodicReport(i, logInterval, count)`
 - Process each element from the slice
-- Report progress in the form `At item i/N...`, after `logInterval` items
 
 Run the parallel tool like:
 
 ```shell
-node src/index.js run -c <workers-count> -g <path>/my-gatherer.js -w <path>/my-worker.js -i <log-interval>
+node src/index.js run -c 50 -g my-gatherer.js -w my-worker.js -i 1000
 ```
 
-## If Gathering the Raw Data is Lengthy
+## Chaining Workers
 
-If gathering this data is a lengthy process, then implement the gatherer as a worker that you run separately, and run this in two stages.
+If you need multiple processing stages, you can create and chain as many different workers as you need.  The only requirements are that:
 
-### Stage 1: Gather data in parallel
+- The first worker in the chain has an initial gatherer that's fairly quick
+- Each subsequent worker's gatherer can quickly transform `output/OUT.csv` from the previous stage, into `output/STEP1.csv` for the current stage
 
-Run:
+Then you'd run the chain like this:
+
+Stage 1 (`gatherer1.js` is the initial gatherer):
 
 ```shell
-node src/index.js run -c <workers-count> -w <path>/my-gatherer.js -i <log-interval>
+node src/index.js run -c 50 -g gatherer1.js -w worker1.js -i 1000
 ```
 
-Then rename `output/OUT.csv` to `output/STEP1.csv`.
-
-### Stage 2: Process gathered data
+Stage 2 (`gatherer2.js` transforms Stage 1's `OUT.csv` into Stage 2's `STEP1.csv`):
 
 ```shell
-node src/index.js run -c <workers-count> -w <path>/my-worker.js -i <log-interval>
+node src/index.js run -c 50 -g gatherer2.js -w worker2.js -i 1000
 ```
+
+... and so on.
+
+The intermediate `OUT.csv` files need not be lost: each subsequent gatherer can make a copy of it before transforming it into the next `STEP1.csv`.
 
 # Reference
+
+## CLI
 
 Run like:
 
@@ -80,6 +91,6 @@ Where:
     - Using in-line reporting such as dots with no new-line added is not recommended, because
     - the output would become useless due to the amount of workers sharing it.
 
-NOTE: I also attempted to do this with just NodeJS promises, based on the fact that
-requests are made in parallel by the Node engine.  It does run in parallel, but
-much slower than in the fork version.  Thus, this tool was born.
+## Functions
+
+TBD

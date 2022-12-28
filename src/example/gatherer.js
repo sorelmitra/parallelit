@@ -1,27 +1,23 @@
-const { Command } = require('commander')
+console.time('runtime')
+
 const fs = require("fs")
 const {format} = require("@fast-csv/format")
-const program = new Command()
 
-const gather = async (outputFilepath) => {
+const {gathererMain, periodicReport} = require("../lib/para")
+
+const gather = async (outputFilepath, logInterval) => {
+  logInterval = logInterval ?? 1000
   const stream = format({ headers: ['id', 'value'] })
  	stream.pipe(fs.createWriteStream(outputFilepath))
-  for (let i = 1; i < 164; i++) {
+
+  const count = 163
+  for (let i = 1; i < count + 1; i++) {
+    periodicReport(i, logInterval, count);
     const randomNumber = i + Math.floor(Math.random() + 20)
     stream.write([i, randomNumber])
   }
+
   stream.end()
 }
 
-const main = async () => {
-  program
-    .description(`Gather raw data for parallel processing`)
-    .argument('<output-filepath>', 'CSV raw data to where to put gathered raw data')
- 		.action(async (outputFilepath) => {
- 			await gather(outputFilepath)
- 		})
-
-  await program.parseAsync()
-}
-
-main().then(() => console.log('Done.')).catch(e => console.error(e))
+gathererMain(gather).then(() => console.log('Done.')).catch(e => console.error(e)).finally(() => console.timeEnd('runtime'))
