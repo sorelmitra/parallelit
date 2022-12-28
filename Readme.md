@@ -26,7 +26,7 @@ Copy `src/example/worker.js` and implement the `doWork(number, slice, sliceSourc
 Run the parallel tool like:
 
 ```shell
-node src/index.js run -c 50 -g my-gatherer.js -w my-worker.js -i 1000
+node src/index.js run -c 50 -g my-gatherer.js -w my-worker.js -f id,name,email -i 1000
 ```
 
 ## Chaining Workers
@@ -41,13 +41,13 @@ Then you'd run the chain like this:
 Stage 1 (`gatherer1.js` is the initial gatherer):
 
 ```shell
-node src/index.js run -c 50 -g gatherer1.js -w worker1.js -i 1000
+node src/index.js run -c 50 -g gatherer1.js -w worker1.js -f id,name,email -i 1000
 ```
 
 Stage 2 (`gatherer2.js` transforms Stage 1's `OUT.csv` into Stage 2's `STEP1.csv`):
 
 ```shell
-node src/index.js run -c 50 -g gatherer2.js -w worker2.js -i 1000
+node src/index.js run -c 50 -g gatherer2.js -w worker2.js -f id,name,email -i 1000
 ```
 
 ... and so on.
@@ -61,12 +61,14 @@ The intermediate `OUT.csv` files need not be lost: each subsequent gatherer can 
 Run like:
 
 ```shell
-node index.js [--gatherer `gather-raw-data-JS`] --count `workersCount` --worker `worker-JS`
+node index.js [--gatherer <gather-raw-data-JS>] --count <workersCount> --worker <worker-JS> [--worker-output-format <workerOutputFormat>]
 ```
 
 Where:
 
 * `workersCount` is the number of parallel workers that will be spawned.
+
+* `workerOutputFormat` is the CSV format of the output file written by workers.  E.g. `id,name,email`.  Defaults to `id,value`.
 
 * `gather-raw-data-JS` is the Node.JS file that will produce the CSV with raw data,
   which will be split into `workersCount` slices.  It will be called with a single parameter: `output-file-path.csv`, which is a CSV file where the program will write the data to be

@@ -79,23 +79,23 @@ const getSlices = (itemsCount, workersCount) => {
 }
 
 const getWorkerResults = async (number, itemSlice) => new Promise(resolve => {
-	let i = -1
+	let i = -2
 	const results = []
 	fs.createReadStream(getStep2Filename(number))
 		.pipe(parse())
 		.on("error", error => console.error(error))
 		.on("data", async row => {
-			if (row.includes('id')) return // skip header row
 			i++
+			if (i === -1) return // skip header row
 			results.push(row)
 		})
 		.on("end", (rowCount) => {
 			resolve(results)
 		})
-});
+})
 
-const gatherAllResults = async slices => {
-	const stream = format({ headers: ['id', 'value'] });
+const gatherAllResults = async (slices, workerOutputFormat = "id,value") => {
+	const stream = format({ headers: workerOutputFormat.split(',') });
 	stream.pipe(fs.createWriteStream(step2AllFilename));
 	for (let i = 0; i < slices.length; i++) {
 		const results = await getWorkerResults(i + 1);
@@ -103,8 +103,8 @@ const gatherAllResults = async slices => {
 			stream.write(result)
 		}
 	}
-	stream.end();
-};
+	stream.end()
+}
 
 const startAWorker = (workerFilepath, workerIndex, slice, timeout) => new Promise(resolve => {
 	const number = workerIndex + 1
@@ -137,7 +137,7 @@ const startAWorker = (workerFilepath, workerIndex, slice, timeout) => new Promis
 	}, timeout)
 })
 
-const startWorkers = async (workersCount, workerFilepath) => {
+const startWorkers = async (workersCount, workerFilepath, workerOutputFormat) => {
 	const n = await getStep1ItemsCount()
 
 	const slices = getSlices(n, workersCount)
@@ -147,7 +147,7 @@ const startWorkers = async (workersCount, workerFilepath) => {
 		children[i] = startAWorker(workerFilepath, i, slice, 2000 * i)
 	}
 	await Promise.all(children)
-	await gatherAllResults(slices)
+	await gatherAllResults(slices, workerOutputFormat)
 	console.log(`All ${children.length} children have finished`)
 }
 
@@ -171,11 +171,12 @@ https://github.com/sorelmitra/parallelit
 		.requiredOption('-w, --worker <file path>', 'Path to the Node.JS worker file')
 		.option('-g, --gatherer <file path>', "Path to the Node.JS gatherer file.  If not specified, it will not gather data, and will assume it's been already gathered")
 		.option('-i, --log-interval <number>', 'Number of loans after which to log status')
+		.option('-f, --worker-output-format <number>', 'Format of the output CSV file created by workers, e.g. "id,value"')
 		.action(async (options) => {
 			if (options.logInterval) step2LogInterval = options.logInterval
 			try {
 				if (options.gatherer) await gatherRawData(options.gatherer)
-				await startWorkers(options.count, options.worker)
+				await startWorkers(options.count, options.worker, options.workerOutputFormat)
 			} catch (e) {
 				console.error(e)
 			}
