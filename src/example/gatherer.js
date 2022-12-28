@@ -12,7 +12,7 @@ const gather = async (outputFilepath, logInterval) => {
 
   const count = 163
   for (let i = 1; i < count + 1; i++) {
-    periodicReport(i, logInterval, count);
+    periodicReport('runtime', i, logInterval, count);
     const randomNumber = i + Math.floor(Math.random() + 20)
     stream.write([i, randomNumber])
   }

@@ -20,7 +20,7 @@ const doWork = async (number, slice, sliceSource, outputFilepath, logInterval) =
   const count = sliceItems.length
   for (let i = 0; i < count; i++) {
     const item = sliceItems[i]
-    periodicReport(i, logInterval, count)
+    periodicReport('runtime', i, logInterval, count)
     const doubledInt = await simulateHardWork(item[1])
     stream.write([item[0], doubledInt])
   }

@@ -20,7 +20,7 @@ Copy `src/example/gatherer.js` and implement the `gather()` function to write th
 Copy `src/example/worker.js` and implement the `doWork(number, slice, sliceSource, outputFilepath, logInterval)` function to:
 
 - Read its `slice` from `sliceSource` CSV file, by calling to `getSlice(sliceSource, slice.start, slice.end)`
-- Report progress by calling to `periodicReport(i, logInterval, count)`
+- Report progress by calling to `periodicReport('runtime', i, logInterval, count)`
 - Process each element from the slice
 
 Run the parallel tool like:

@@ -3,9 +3,9 @@ const fs = require("fs");
 const {parse} = require("@fast-csv/parse");
 const program = new Command()
 
-module.exports.periodicReport = (index, logInterval, count) => {
+module.exports.periodicReport = (label, index, logInterval, count) => {
   if (index && index % logInterval === 0) {
-    console.log(`At item ${index}/${count}...`)
+    console.timeLog(label, `At item ${index}/${count}...`)
   }
 }
 
