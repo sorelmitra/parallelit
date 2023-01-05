@@ -6,6 +6,10 @@ process.env = {
 	AWS_PROFILE: `${process.env.ENV}-profile`,
 	AWS_NODEJS_CONNECTION_REUSE_ENABLED: '1'
 }
+if (!process.env.AWS_PROFILE) {
+	process.env.AWS_PROFILE = `${process.env.ENV}-profile`
+}
+
 const fs = require('fs')
 const { format } = require('@fast-csv/format')
 const { parse } = require('@fast-csv/parse')
