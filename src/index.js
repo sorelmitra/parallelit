@@ -68,6 +68,7 @@ const getStep1ItemsCount = async () => new Promise(resolve => {
 });
 
 const getSlices = (itemsCount, workersCount) => {
+	if (workersCount < 1) return []
 	const size = Math.floor(itemsCount / workersCount)
 	const slices = []
 	let start = 0
