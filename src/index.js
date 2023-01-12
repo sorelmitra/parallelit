@@ -101,7 +101,10 @@ const getWorkerResults = async (number, itemSlice) => new Promise(resolve => {
 })
 
 const gatherAllResults = async (slices, workerOutputFormat = "id,value") => {
-	const stream = format({ headers: workerOutputFormat.split(',') });
+	const stream = format({
+		headers: workerOutputFormat.split(','),
+		escape: getEscape()
+	});
 	stream.pipe(fs.createWriteStream(step2AllFilename));
 	for (let i = 0; i < slices.length; i++) {
 		const results = await getWorkerResults(i + 1);
