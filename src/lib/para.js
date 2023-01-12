@@ -21,11 +21,13 @@ module.exports.gathererMain = async gatherFunc => {
   await program.parseAsync()
 }
 
+module.exports.getEscape = () => '\\'
+
 module.exports.getSlice = (source, start, end, header = '') => new Promise(resolve => {
   let i = -2
   const slice = []
   fs.createReadStream(source)
-    .pipe(parse())
+    .pipe(parse({escape: module.exports.getEscape()}))
     .on("error", error => console.error(error))
     .on("data", async row => {
       i++

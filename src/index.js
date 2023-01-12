@@ -15,6 +15,7 @@ const { format } = require('@fast-csv/format')
 const { parse } = require('@fast-csv/parse')
 const { fork} = require('child_process')
 const { Command } = require('commander')
+const { getEscape } = require("./lib/para")
 const program = new Command()
 
 let step2LogInterval = 1000
@@ -56,7 +57,7 @@ const gatherRawData = async gathererFilepath => {
 
 const getStep1ItemsCount = async () => new Promise(resolve => {
 	fs.createReadStream(step1Filename)
-		.pipe(parse())
+		.pipe(parse({escape: getEscape()}))
 		.on("error", error => console.error(error))
 		.on('data', () => {
 		})
@@ -87,7 +88,7 @@ const getWorkerResults = async (number, itemSlice) => new Promise(resolve => {
 	let i = -2
 	const results = []
 	fs.createReadStream(getStep2Filename(number))
-		.pipe(parse())
+		.pipe(parse({escape: getEscape()}))
 		.on("error", error => console.error(error))
 		.on("data", async row => {
 			i++
