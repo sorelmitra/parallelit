@@ -177,7 +177,7 @@ https://github.com/sorelmitra/parallelit
 	program.command('run')
 		.description('Run parallel workers on slices of data')
 		.requiredOption('-c, --count <number>', `Number of parallel workers to be spawned`, '1')
-		.requiredOption('-w, --worker <file path>', 'Path to the Node.JS worker file')
+		.option('-w, --worker <file path>', 'Path to the Node.JS worker file')
 		.option('-g, --gatherer <file path>', "Path to the Node.JS gatherer file.  If not specified, it will not gather data, and will assume it's been already gathered")
 		.option('-i, --log-interval <number>', 'Number of loans after which to log status')
 		.option('-f, --worker-output-format <number>', 'Format of the output CSV file created by workers, e.g. "id,value"')
@@ -185,7 +185,8 @@ https://github.com/sorelmitra/parallelit
 			if (options.logInterval) step2LogInterval = options.logInterval
 			try {
 				if (options.gatherer) await gatherRawData(options.gatherer)
-				await startWorkers(options.count, options.worker, options.workerOutputFormat)
+				if (options.worker) await startWorkers(options.count, options.worker, options.workerOutputFormat)
+				if (!options.worker && !options.gatherer) console.log('Nothing to do, please use a worker or gatherer in order to do some meaningful work.')
 			} catch (e) {
 				console.error(e)
 			}
